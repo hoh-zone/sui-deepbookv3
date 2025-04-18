@@ -1,0 +1,43 @@
+[package]
+name = "sui-deepbookv3"
+description = "Sui Deepbook V3"
+version = "0.1.0"
+authors = ["King <lispking@qq.com>"]
+license = "Apache-2.0"
+edition = "2021"
+readme = "README.md"
+keywords = ["sui", "deepbook"]
+categories = ["blockchain", "sui"]
+homepage = "https://github.com/lispking/sui-deepbookv3"
+repository = "https://github.com/lispking/sui-deepbookv3"
+
+[dependencies]
+sui-sdk = { git = "https://github.com/mystenlabs/sui", package = "sui-sdk" }
+tokio = { version = "1.2", features = ["full"] }
+anyhow = "1.0"
+lazy_static = "1.5.0"
+serde_json = "1.0.133"
+async-trait = "0.1.83"
+serde = "1.0.216"
+bcs = "0.1.6"
+
+[dev-dependencies]
+shared-crypto = { git = "https://github.com/mystenlabs/sui", package = "shared-crypto" }
+sui-keys = { git = "https://github.com/mystenlabs/sui", package = "sui-keys" }
+sui-config = { git = "https://github.com/mystenlabs/sui", package = "sui-config" }
+
+[[example]]
+name = "balance"
+path = "examples/balance.rs"
+
+[[example]]
+name = "account_order_map"
+path = "examples/account_order_map.rs"
+
+[[example]]
+name = "account_open_orders"
+path = "examples/account_open_orders.rs"
+
+[[example]]
+name = "get_level2_range"
+path = "examples/get_level2_range.rs"
