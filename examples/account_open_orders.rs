@@ -18,6 +18,8 @@ async fn main() -> Result<()> {
             address: "0x344c2734b1d211bd15212bfb7847c66a3b18803f3f5ab00f5ff6f87b6fe6d27d"
                 .to_string(),
             trade_cap: None,
+            deposit_cap: None,
+            withdraw_cap: None,
         },
     );
 

@@ -1,7 +1,8 @@
 use std::str::FromStr;
 use sui_sdk::{
+    rpc_types::Coin,
     types::{
-        base_types::ObjectID, programmable_transaction_builder::ProgrammableTransactionBuilder,
+        base_types::{ObjectID, SuiAddress}, programmable_transaction_builder::ProgrammableTransactionBuilder,
         transaction::Argument, Identifier, TypeTag, SUI_CLOCK_OBJECT_ID,
     },
     SuiClient,
@@ -1189,6 +1190,76 @@ impl DeepBookContract {
             ObjectID::from_hex_literal(self.config.deepbook_package_id())?,
             Identifier::new("pool")?,
             Identifier::new("get_order_deep_price")?,
+            vec![base_coin_tag, quote_coin_tag],
+            arguments,
+        ))
+    }
+
+    /// Create a new pool permissionlessly
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance
+    /// @param base_coin_key - Key of the base coin
+    /// @param quote_coin_key - Key of the quote coin
+    /// @param tick_size - Tick size for the pool
+    /// @param lot_size - Lot size for the pool
+    /// @param min_size - Minimum size for orders
+    /// @param deep_coin - Optional DEEP coin object
+    /// @returns The create permissionless pool call
+    pub async fn create_permissionless_pool(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        sender: SuiAddress,
+        base_coin_key: &str,
+        quote_coin_key: &str,
+        tick_size: f64,
+        lot_size: f64,
+        min_size: f64,
+        deep_coin: Option<Coin>,
+    ) -> anyhow::Result<Argument> {
+        let base_coin = self.config.get_coin(base_coin_key)?;
+        let quote_coin = self.config.get_coin(quote_coin_key)?;
+        let deep_coin_type = self.config.get_coin("DEEP")?;
+
+        let base_scalar = base_coin.scalar;
+        let quote_scalar = quote_coin.scalar;
+
+        let adjusted_tick_size = ((tick_size * FLOAT_SCALAR as f64 * quote_scalar as f64)
+            / base_scalar as f64)
+            .round() as u64;
+        let adjusted_lot_size = (lot_size * base_scalar as f64).round() as u64;
+        let adjusted_min_size = (min_size * base_scalar as f64).round() as u64;
+
+        let registry_id = ObjectID::from_hex_literal(self.config.registry_id())?;
+
+        // Handle DEEP coin
+        let deep_coin_obj = match deep_coin {
+            Some(coin_id) => coin_id,
+            None => {
+                self.client
+                    .get_coin_object(
+                        sender,
+                        deep_coin_type.type_name.clone(),
+                        deep_coin_type.scalar,
+                    )
+                    .await?
+            }
+        };
+
+        let base_coin_tag = TypeTag::from_str(&base_coin.type_name)?;
+        let quote_coin_tag = TypeTag::from_str(&quote_coin.type_name)?;
+
+        let arguments = vec![
+            ptb.obj(self.client.share_object(registry_id).await?)?,
+            ptb.pure(adjusted_tick_size)?,
+            ptb.pure(adjusted_lot_size)?,
+            ptb.pure(adjusted_min_size)?,
+            ptb.obj(self.client.coin_object(deep_coin_obj).await?)?,
+        ];
+
+        Ok(ptb.programmable_move_call(
+            ObjectID::from_hex_literal(self.config.deepbook_package_id())?,
+            Identifier::new("pool")?,
+            Identifier::new("create_permissionless_pool")?,
             vec![base_coin_tag, quote_coin_tag],
             arguments,
         ))

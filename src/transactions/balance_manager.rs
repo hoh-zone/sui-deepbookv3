@@ -59,6 +59,45 @@ impl BalanceManagerContract {
         Ok(())
     }
 
+    /// Create and share a new BalanceManager with a specified owner
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance
+    /// @param owner_address - The address of the owner
+    pub fn create_and_share_balance_manager_with_owner(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        owner_address: SuiAddress,
+    ) -> anyhow::Result<()> {
+        let package_id = ObjectID::from_hex_literal(self.config.deepbook_package_id())?;
+
+        let arguments = vec![ptb.pure(owner_address)?];
+
+        let manager = ptb.programmable_move_call(
+            package_id,
+            Identifier::new("balance_manager")?,
+            Identifier::new("new_with_owner")?,
+            vec![],
+            arguments,
+        );
+
+        let manager_tag = TypeTag::from_str(
+            format!(
+                "{}::balance_manager::BalanceManager",
+                self.config.deepbook_package_id()
+            )
+            .as_str(),
+        )?;
+
+        ptb.programmable_move_call(
+            SUI_FRAMEWORK_PACKAGE_ID,
+            Identifier::new("transfer")?,
+            Identifier::new("public_share_object")?,
+            vec![manager_tag],
+            vec![manager],
+        );
+        Ok(())
+    }
+
     /// Deposit funds into the BalanceManager
     ///
     /// @param ptb - ProgrammableTransactionBuilder instance
@@ -277,6 +316,182 @@ impl BalanceManagerContract {
             vec![],
             arguments,
         ))
+    }
+
+    /// Mint a TradeCap
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance
+    /// @param manager_key - The key to identify the BalanceManager
+    pub async fn mint_trade_cap(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        manager_key: &str,
+    ) -> anyhow::Result<()> {
+        let package_id = ObjectID::from_hex_literal(self.config.deepbook_package_id())?;
+        let manager_address = self
+            .config
+            .get_balance_manager(manager_key)?
+            .address
+            .as_str();
+        let manager_id = ObjectID::from_hex_literal(manager_address)?;
+
+        let arguments = vec![ptb.obj(self.client.share_object_mutable(manager_id).await?)?];
+        ptb.programmable_move_call(
+            package_id,
+            Identifier::new("balance_manager")?,
+            Identifier::new("mint_trade_cap")?,
+            vec![],
+            arguments,
+        );
+        Ok(())
+    }
+
+    /// Mint a DepositCap
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance
+    /// @param manager_key - The key to identify the BalanceManager
+    pub async fn mint_deposit_cap(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        manager_key: &str,
+    ) -> anyhow::Result<()> {
+        let package_id = ObjectID::from_hex_literal(self.config.deepbook_package_id())?;
+        let manager_address = self
+            .config
+            .get_balance_manager(manager_key)?
+            .address
+            .as_str();
+        let manager_id = ObjectID::from_hex_literal(manager_address)?;
+
+        let arguments = vec![ptb.obj(self.client.share_object_mutable(manager_id).await?)?];
+        ptb.programmable_move_call(
+            package_id,
+            Identifier::new("balance_manager")?,
+            Identifier::new("mint_deposit_cap")?,
+            vec![],
+            arguments,
+        );
+        Ok(())
+    }
+
+    /// Mint a WithdrawCap
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance
+    /// @param manager_key - The key to identify the BalanceManager
+    pub async fn mint_withdraw_cap(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        manager_key: &str,
+    ) -> anyhow::Result<()> {
+        let package_id = ObjectID::from_hex_literal(self.config.deepbook_package_id())?;
+        let manager_address = self
+            .config
+            .get_balance_manager(manager_key)?
+            .address
+            .as_str();
+        let manager_id = ObjectID::from_hex_literal(manager_address)?;
+
+        let arguments = vec![ptb.obj(self.client.share_object_mutable(manager_id).await?)?];
+        ptb.programmable_move_call(
+            package_id,
+            Identifier::new("balance_manager")?,
+            Identifier::new("mint_withdraw_cap")?,
+            vec![],
+            arguments,
+        );
+        Ok(())
+    }
+
+    /// Deposit using DepositCap
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance
+    /// @param manager_key - The key to identify the BalanceManager
+    /// @param coin_key - The key to identify the coin
+    /// @param amount_to_deposit - The amount to deposit
+    pub async fn deposit_with_cap(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        sender: SuiAddress,
+        manager_key: &str,
+        coin_key: &str,
+        amount_to_deposit: f64,
+    ) -> anyhow::Result<()> {
+        let balance_manager = self.config.get_balance_manager(manager_key)?;
+        let manager_id = ObjectID::from_hex_literal(balance_manager.address.as_str())?;
+        let deposit_cap_id = ObjectID::from_hex_literal(
+            balance_manager
+                .deposit_cap
+                .clone()
+                .ok_or_else(|| anyhow::anyhow!("DepositCap not set for {}", manager_key))?
+                .as_str(),
+        )?;
+        let package_id = ObjectID::from_hex_literal(self.config.deepbook_package_id())?;
+        let coin = self.config.get_coin(coin_key)?.clone();
+        let deposit_input = (amount_to_deposit * coin.scalar as f64).round() as u64;
+        let deposit_coin = self
+            .client
+            .get_coin_object(sender, coin.type_name.clone(), deposit_input)
+            .await?;
+
+        let arguments = vec![
+            ptb.obj(self.client.share_object_mutable(manager_id).await?)?,
+            ptb.obj(self.client.share_object(deposit_cap_id).await?)?,
+            ptb.pure(self.client.coin_object(deposit_coin).await?)?,
+        ];
+
+        ptb.programmable_move_call(
+            package_id,
+            Identifier::new("balance_manager")?,
+            Identifier::new("deposit_with_cap")?,
+            vec![TypeTag::from_str(coin.type_name.as_str())?],
+            arguments,
+        );
+        Ok(())
+    }
+
+    /// Withdraw using WithdrawCap
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance
+    /// @param manager_key - The key to identify the BalanceManager
+    /// @param coin_key - The key to identify the coin
+    /// @param amount_to_withdraw - The amount to withdraw
+    pub async fn withdraw_with_cap(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        manager_key: &str,
+        coin_key: &str,
+        amount_to_withdraw: f64,
+        recipient: SuiAddress,
+    ) -> anyhow::Result<()> {
+        let balance_manager = self.config.get_balance_manager(manager_key)?;
+        let manager_id = ObjectID::from_hex_literal(balance_manager.address.as_str())?;
+        let withdraw_cap_id = ObjectID::from_hex_literal(
+            balance_manager
+                .withdraw_cap
+                .clone()
+                .ok_or_else(|| anyhow::anyhow!("WithdrawCap not set for {}", manager_key))?
+                .as_str(),
+        )?;
+        let package_id = ObjectID::from_hex_literal(self.config.deepbook_package_id())?;
+        let coin = self.config.get_coin(coin_key)?;
+        let withdraw_amount = (amount_to_withdraw * coin.scalar as f64).round() as u64;
+
+        let arguments = vec![
+            ptb.obj(self.client.share_object_mutable(manager_id).await?)?,
+            ptb.obj(self.client.share_object(withdraw_cap_id).await?)?,
+            ptb.pure(withdraw_amount)?,
+        ];
+
+        let coin_object = ptb.programmable_move_call(
+            package_id,
+            Identifier::new("balance_manager")?,
+            Identifier::new("withdraw_with_cap")?,
+            vec![TypeTag::from_str(coin.type_name.as_str())?],
+            arguments,
+        );
+
+        ptb.transfer_arg(recipient, coin_object);
+        Ok(())
     }
 
     /// Get the owner of the BalanceManager

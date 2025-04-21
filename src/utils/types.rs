@@ -5,6 +5,8 @@ use sui_sdk::types::base_types::{ObjectID, SuiAddress};
 pub struct BalanceManager {
     pub address: String,
     pub trade_cap: Option<String>,
+    pub deposit_cap: Option<String>,
+    pub withdraw_cap: Option<String>,
 }
 
 /// Represents a coin in the system
@@ -109,6 +111,17 @@ pub struct CreatePoolAdminParams {
     pub stable_pool: bool,
     pub deep_coin: Option<ObjectID>,
     pub base_coin: Option<ObjectID>,
+}
+
+/// Parameters for creating a permissionless pool
+#[derive(Debug, Clone)]
+pub struct CreatePermissionlessPoolParams {
+    pub base_coin_key: String,
+    pub quote_coin_key: String,
+    pub tick_size: f64,
+    pub lot_size: f64,
+    pub min_size: f64,
+    pub deep_coin: Option<ObjectID>,
 }
 
 /// Configuration for the DeepBook system

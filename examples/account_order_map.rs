@@ -19,6 +19,8 @@ async fn main() -> Result<()> {
             address: "0x344c2734b1d211bd15212bfb7847c66a3b18803f3f5ab00f5ff6f87b6fe6d27d"
                 .to_string(),
             trade_cap: None,
+            deposit_cap: None,
+            withdraw_cap: None,
         },
     );
 
@@ -53,10 +55,7 @@ async fn main() -> Result<()> {
         let mut ask_orders: Vec<(f64, f64)> = Vec::new();
 
         for order_id in orders {
-            if let Some(order) = db_client
-                .get_order_normalized(pool, order_id)
-                .await?
-            {
+            if let Some(order) = db_client.get_order_normalized(pool, order_id).await? {
                 let remaining_quantity = order.quantity.parse::<f64>().unwrap()
                     - order.filled_quantity.parse::<f64>().unwrap();
                 let order_price = order.normalized_price.parse::<f64>().unwrap();

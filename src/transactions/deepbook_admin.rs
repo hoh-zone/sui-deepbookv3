@@ -256,4 +256,66 @@ impl DeepBookAdminContract {
 
         Ok(())
     }
+
+    /// Add a coin to whitelist of stable coins
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance
+    /// @param stable_coin_key - The name of the stable coin to be added
+    pub async fn add_stable_coin(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        stable_coin_key: &str,
+    ) -> Result<()> {
+        let stable_coin = self.config.get_coin(stable_coin_key)?;
+        let stable_coin_tag = TypeTag::from_str(&stable_coin.type_name)?;
+
+        let registry_id = ObjectID::from_hex_literal(self.config.registry_id())?;
+        let admin_cap = ObjectID::from_hex_literal(&self.admin_cap()?)?;
+
+        let arguments = vec![
+            ptb.obj(self.client.share_object(registry_id).await?)?,
+            ptb.obj(self.client.share_object(admin_cap).await?)?,
+        ];
+
+        ptb.programmable_move_call(
+            ObjectID::from_hex_literal(self.config.deepbook_package_id())?,
+            Identifier::new("registry")?,
+            Identifier::new("add_stablecoin")?,
+            vec![stable_coin_tag],
+            arguments,
+        );
+
+        Ok(())
+    }
+
+    /// Remove a coin from whitelist of stable coins
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance 
+    /// @param stable_coin_key - The name of the stable coin to be removed
+    pub async fn remove_stable_coin(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        stable_coin_key: &str,
+    ) -> Result<()> {
+        let stable_coin = self.config.get_coin(stable_coin_key)?;
+        let stable_coin_tag = TypeTag::from_str(&stable_coin.type_name)?;
+
+        let registry_id = ObjectID::from_hex_literal(self.config.registry_id())?;
+        let admin_cap = ObjectID::from_hex_literal(&self.admin_cap()?)?;
+
+        let arguments = vec![
+            ptb.obj(self.client.share_object(registry_id).await?)?,
+            ptb.obj(self.client.share_object(admin_cap).await?)?,
+        ];
+
+        ptb.programmable_move_call(
+            ObjectID::from_hex_literal(self.config.deepbook_package_id())?,
+            Identifier::new("registry")?,
+            Identifier::new("remove_stablecoin")?,
+            vec![stable_coin_tag],
+            arguments,
+        );
+
+        Ok(())
+    }
 }
