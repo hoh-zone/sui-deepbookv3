@@ -18,6 +18,8 @@ async fn main() -> Result<()> {
             address: "0x344c2734b1d211bd15212bfb7847c66a3b18803f3f5ab00f5ff6f87b6fe6d27d"
                 .to_string(),
             trade_cap: None,
+            deposit_cap: None,
+            withdraw_cap: None,
         },
     );
 
@@ -35,8 +37,16 @@ async fn main() -> Result<()> {
         None,
     );
 
-    println!("balance: {:?}", db_client.check_manager_balance("MANAGER_1", "SUI").await?);
-    println!("level2: {:?}", db_client.get_level2_range("SUI_USDC", 0.1, 100.0, true).await?);
+    println!(
+        "balance: {:?}",
+        db_client.check_manager_balance("MANAGER_1", "SUI").await?
+    );
+    println!(
+        "level2: {:?}",
+        db_client
+            .get_level2_range("SUI_USDC", 0.1, 100.0, true)
+            .await?
+    );
 
     Ok(())
 }

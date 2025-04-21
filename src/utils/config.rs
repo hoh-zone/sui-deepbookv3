@@ -13,6 +13,7 @@ pub const FLOAT_SCALAR: u64 = 1_000_000_000;
 pub const MAX_TIMESTAMP: u64 = 1_844_674_407_370_955_161;
 pub const GAS_BUDGET: u64 = 250_000_000; // 0.5 * 500000000
 pub const DEEP_SCALAR: u64 = 1_000_000;
+pub const POOL_CREATION_FEE: u64 = 500 * 1_000_000; // 500 DEEP
 
 // Type aliases
 pub type CoinMap = HashMap<&'static str, Coin>;
