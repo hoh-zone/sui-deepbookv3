@@ -4,6 +4,7 @@ use sui_sdk::rpc_types::SuiObjectData;
 use sui_sdk::rpc_types::SuiObjectDataOptions;
 use sui_sdk::rpc_types::SuiTypeTag;
 use sui_sdk::types::base_types::SuiAddress;
+use sui_sdk::types::object::Owner;
 use sui_sdk::types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_sdk::types::transaction::ObjectArg;
 use sui_sdk::types::transaction::TransactionKind;
@@ -84,20 +85,44 @@ impl DataReader for SuiClient {
 
     async fn share_object(&self, object_id: ObjectID) -> anyhow::Result<ObjectArg> {
         let object = self.get_object(object_id).await?;
-        Ok(ObjectArg::SharedObject {
-            id: object_id,
-            initial_shared_version: object.version,
-            mutable: false,
-        })
+        if let Some(owner) = object.owner {
+            if let Owner::Shared {
+                initial_shared_version,
+            } = owner
+            {
+                return Ok(ObjectArg::SharedObject {
+                    id: object_id,
+                    initial_shared_version,
+                    mutable: false,
+                });
+            }
+        }
+
+        Err(anyhow::anyhow!(
+            "Object {} is not shared or missing version information",
+            object_id
+        ))
     }
 
     async fn share_object_mutable(&self, object_id: ObjectID) -> anyhow::Result<ObjectArg> {
         let object = self.get_object(object_id).await?;
-        Ok(ObjectArg::SharedObject {
-            id: object_id,
-            initial_shared_version: object.version,
-            mutable: true,
-        })
+        if let Some(owner) = object.owner {
+            if let Owner::Shared {
+                initial_shared_version,
+            } = owner
+            {
+                return Ok(ObjectArg::SharedObject {
+                    id: object_id,
+                    initial_shared_version,
+                    mutable: true,
+                });
+            }
+        }
+
+        Err(anyhow::anyhow!(
+            "Object {} is not shared or missing version information",
+            object_id
+        ))
     }
 
     async fn dev_inspect_transaction(
