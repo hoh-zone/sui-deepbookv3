@@ -128,7 +128,7 @@ impl BalanceManagerContract {
 
         let arguments = vec![
             ptb.obj(self.client.share_object_mutable(manager_id).await?)?,
-            ptb.pure(self.client.coin_object(deposit_coin).await?)?,
+            ptb.obj(self.client.coin_object(deposit_coin).await?)?,
         ];
 
         ptb.programmable_move_call(
@@ -436,7 +436,7 @@ impl BalanceManagerContract {
         let arguments = vec![
             ptb.obj(self.client.share_object_mutable(manager_id).await?)?,
             ptb.obj(self.client.share_object(deposit_cap_id).await?)?,
-            ptb.pure(self.client.coin_object(deposit_coin).await?)?,
+            ptb.obj(self.client.coin_object(deposit_coin).await?)?,
         ];
 
         ptb.programmable_move_call(
