@@ -947,7 +947,7 @@ impl DeepBookContract {
         };
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
             ptb.obj(self.client.coin_object(base_coin).await?)?,
             ptb.obj(self.client.coin_object(deep_coin).await?)?,
             ptb.pure(min_quote)?,
@@ -1013,7 +1013,7 @@ impl DeepBookContract {
         };
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
             ptb.obj(self.client.coin_object(quote_coin).await?)?,
             ptb.obj(self.client.coin_object(deep_coin).await?)?,
             ptb.pure(min_base)?,
