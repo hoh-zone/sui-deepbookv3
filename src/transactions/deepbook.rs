@@ -143,8 +143,8 @@ impl DeepBookContract {
         let quote_coin_tag = TypeTag::from_str(&quote_coin.type_name)?;
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
-            ptb.obj(self.client.share_object(balance_manager_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(balance_manager_id).await?)?,
             trade_proof,
             ptb.pure(params.client_order_id)?,
             ptb.pure(self_matching_option as u8)?,
