@@ -176,7 +176,7 @@ impl DeepBookContract {
         ptb: &mut ProgrammableTransactionBuilder,
         pool_key: &str,
         balance_manager_key: &str,
-        order_id: &str,
+        order_id: u128,
         new_quantity: f64,
     ) -> anyhow::Result<Argument> {
         let pool = self.config.get_pool(pool_key)?;
@@ -192,14 +192,13 @@ impl DeepBookContract {
 
         let pool_id = ObjectID::from_hex_literal(&pool.address)?;
         let balance_manager_id = ObjectID::from_hex_literal(&balance_manager.address)?;
-        let order_id = ObjectID::from_hex_literal(order_id)?;
 
         let base_coin_tag = TypeTag::from_str(&base_coin.type_name)?;
         let quote_coin_tag = TypeTag::from_str(&quote_coin.type_name)?;
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
-            ptb.obj(self.client.share_object(balance_manager_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(balance_manager_id).await?)?,
             trade_proof,
             ptb.pure(order_id)?,
             ptb.pure(input_quantity)?,
