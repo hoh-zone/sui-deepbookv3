@@ -54,7 +54,7 @@ pub enum SelfMatchingOptions {
 pub struct PlaceLimitOrderParams {
     pub pool_key: String,
     pub balance_manager_key: String,
-    pub client_order_id: String,
+    pub client_order_id: u64,
     pub price: f64,
     pub quantity: f64,
     pub is_bid: bool,

@@ -2,8 +2,10 @@ use std::str::FromStr;
 use sui_sdk::{
     rpc_types::Coin,
     types::{
-        base_types::{ObjectID, SuiAddress}, programmable_transaction_builder::ProgrammableTransactionBuilder,
-        transaction::Argument, Identifier, TypeTag, SUI_CLOCK_OBJECT_ID,
+        base_types::{ObjectID, SuiAddress},
+        programmable_transaction_builder::ProgrammableTransactionBuilder,
+        transaction::Argument,
+        Identifier, TypeTag, SUI_CLOCK_OBJECT_ID,
     },
     SuiClient,
 };
@@ -84,8 +86,8 @@ impl DeepBookContract {
         let quote_coin_tag = TypeTag::from_str(&quote_coin.type_name)?;
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
-            ptb.obj(self.client.share_object(balance_manager_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(balance_manager_id).await?)?,
             trade_proof,
             ptb.pure(params.client_order_id)?,
             ptb.pure(order_type as u8)?,
@@ -225,7 +227,7 @@ impl DeepBookContract {
         ptb: &mut ProgrammableTransactionBuilder,
         pool_key: &str,
         balance_manager_key: &str,
-        order_id: &str,
+        order_id: u128,
     ) -> anyhow::Result<Argument> {
         let pool = self.config.get_pool(pool_key)?;
         let balance_manager = self.config.get_balance_manager(balance_manager_key)?;
@@ -239,14 +241,13 @@ impl DeepBookContract {
 
         let pool_id = ObjectID::from_hex_literal(&pool.address)?;
         let balance_manager_id = ObjectID::from_hex_literal(&balance_manager.address)?;
-        let order_id = ObjectID::from_hex_literal(order_id)?;
 
         let base_coin_tag = TypeTag::from_str(&base_coin.type_name)?;
         let quote_coin_tag = TypeTag::from_str(&quote_coin.type_name)?;
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
-            ptb.obj(self.client.share_object(balance_manager_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(balance_manager_id).await?)?,
             trade_proof,
             ptb.pure(order_id)?,
             ptb.obj(self.client.share_object(SUI_CLOCK_OBJECT_ID).await?)?,
@@ -290,8 +291,8 @@ impl DeepBookContract {
         let quote_coin_tag = TypeTag::from_str(&quote_coin.type_name)?;
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
-            ptb.obj(self.client.share_object(balance_manager_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(balance_manager_id).await?)?,
             trade_proof,
             ptb.obj(self.client.share_object(SUI_CLOCK_OBJECT_ID).await?)?,
         ];
