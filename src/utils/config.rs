@@ -83,7 +83,6 @@ impl DeepBookConfig {
     }
 
     pub fn get_balance_manager(&self, manager_key: &str) -> anyhow::Result<&BalanceManager> {
-        println!("Balance managers: {:?}", self.balance_managers);
         self.balance_managers
             .get(manager_key)
             .ok_or(anyhow::anyhow!(

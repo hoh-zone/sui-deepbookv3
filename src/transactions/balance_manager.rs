@@ -283,7 +283,7 @@ impl BalanceManagerContract {
         manager_id: &ObjectID,
     ) -> anyhow::Result<Argument> {
         let package_id = ObjectID::from_hex_literal(self.config.deepbook_package_id())?;
-        let arguments = vec![ptb.obj(self.client.share_object(*manager_id).await?)?];
+        let arguments = vec![ptb.obj(self.client.share_object_mutable(*manager_id).await?)?];
         Ok(ptb.programmable_move_call(
             package_id,
             Identifier::new("balance_manager")?,
@@ -306,7 +306,7 @@ impl BalanceManagerContract {
     ) -> anyhow::Result<Argument> {
         let package_id = ObjectID::from_hex_literal(self.config.deepbook_package_id())?;
         let arguments = vec![
-            ptb.obj(self.client.share_object(*manager_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(*manager_id).await?)?,
             ptb.obj(self.client.share_object(*trade_cap_id).await?)?,
         ];
         Ok(ptb.programmable_move_call(
