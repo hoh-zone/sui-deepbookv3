@@ -52,7 +52,7 @@ impl FlashLoanContract {
         let quote_coin_tag = TypeTag::from_str(quote_coin.type_name.as_str())?;
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
             ptb.pure(input_quantity)?,
         ];
 
@@ -78,7 +78,7 @@ impl FlashLoanContract {
         pool_key: &str,
         borrow_amount: f64,
         base_coin_input: Argument,
-        flash_loan: ObjectRef,
+        flash_loan: Argument,
     ) -> anyhow::Result<Argument> {
         let pool = self.config.get_pool(pool_key)?;
         let base_coin = self.config.get_coin(&pool.base_coin)?;
@@ -94,9 +94,9 @@ impl FlashLoanContract {
         let quote_coin_tag = TypeTag::from_str(quote_coin.type_name.as_str())?;
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
-            ptb.pure(base_coin_return)?,
-            ptb.obj(ObjectArg::ImmOrOwnedObject(flash_loan))?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
+            base_coin_return,
+            flash_loan,
         ];
 
         ptb.programmable_move_call(
@@ -107,7 +107,7 @@ impl FlashLoanContract {
             arguments,
         );
 
-        Ok(base_coin_return)
+        Ok(base_coin_input)
     }
 
     /// Borrow quote asset from the pool
@@ -132,7 +132,7 @@ impl FlashLoanContract {
         let quote_coin_tag = TypeTag::from_str(quote_coin.type_name.as_str())?;
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
             ptb.pure(input_quantity)?,
         ];
 
@@ -158,7 +158,7 @@ impl FlashLoanContract {
         pool_key: &str,
         borrow_amount: f64,
         quote_coin_input: Argument,
-        flash_loan: ObjectRef,
+        flash_loan: Argument,
     ) -> anyhow::Result<Argument> {
         let pool = self.config.get_pool(pool_key)?;
         let base_coin = self.config.get_coin(&pool.base_coin)?;
@@ -174,17 +174,19 @@ impl FlashLoanContract {
         let quote_coin_tag = TypeTag::from_str(quote_coin.type_name.as_str())?;
 
         let arguments = vec![
-            ptb.obj(self.client.share_object(pool_id).await?)?,
-            ptb.pure(quote_coin_return)?,
-            ptb.obj(ObjectArg::ImmOrOwnedObject(flash_loan))?,
+            ptb.obj(self.client.share_object_mutable(pool_id).await?)?,
+            quote_coin_return,
+            flash_loan,
         ];
 
-        Ok(ptb.programmable_move_call(
+        ptb.programmable_move_call(
             ObjectID::from_hex_literal(self.config.deepbook_package_id())?,
             Identifier::new("pool")?,
             Identifier::new("return_flashloan_quote")?,
             vec![base_coin_tag, quote_coin_tag],
             arguments,
-        ))
+        );
+
+        Ok(quote_coin_input)
     }
 }
