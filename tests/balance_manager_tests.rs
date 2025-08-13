@@ -91,6 +91,8 @@ fn deep_book_config() -> DeepBookConfig {
             address: "0x722c39b7b79831d534fbfa522e07101cb881f8807c28b9cf03a58b04c6c5ca9a"
                 .to_string(),
             trade_cap: None,
+            deposit_cap: None,
+            withdraw_cap: None,
         },
     )]);
 
