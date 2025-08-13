@@ -10,7 +10,7 @@ pub const TESTNET_PACKAGE_IDS: DeepBookPackageIds = DeepBookPackageIds {
 };
 
 pub const MAINNET_PACKAGE_IDS: DeepBookPackageIds = DeepBookPackageIds {
-    deepbook_package_id: "0x2c8d603bc51326b8c13cef9dd07031a408a48dddb541963357661df5d3204809",
+    deepbook_package_id: "0xb29d83c26cdd2a64959263abbcfc4a6937f0c9fccaf98580ca56faded65be244",
     registry_id: "0xaf16199a2dff736e9f07a845f23c5da6df6f756eddb631aed9d24a93efc4549d",
     deep_treasury_id: "0x032abf8948dda67a271bcc18e776dbbcfb0d58c8d288a700ff0d5521e57a1ffe",
 };
