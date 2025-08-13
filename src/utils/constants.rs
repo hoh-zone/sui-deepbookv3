@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use super::types::{Coin, DeepBookPackageIds, Pool};
 
 pub const TESTNET_PACKAGE_IDS: DeepBookPackageIds = DeepBookPackageIds {
-    deepbook_package_id: "0x984757fc7c0e6dd5f15c2c66e881dd6e5aca98b725f3dbd83c445e057ebb790a",
+    deepbook_package_id: "0xa3886aaa8aa831572dd39549242ca004a438c3a55967af9f0387ad2b01595068",
     registry_id: "0x7c256edbda983a2cd6f946655f4bf3f00a41043993781f8674a7046e8c0e11d1",
     deep_treasury_id: "0x69fffdae0075f8f71f4fa793549c11079266910e8905169845af1f5d00e09dcb",
 };
