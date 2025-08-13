@@ -1,16 +1,15 @@
+use super::types::{Coin, DeepBookPackageIds, Pool};
 use lazy_static;
 use std::collections::HashMap;
 
-use super::types::{Coin, DeepBookPackageIds, Pool};
-
 pub const TESTNET_PACKAGE_IDS: DeepBookPackageIds = DeepBookPackageIds {
-    deepbook_package_id: "0x984757fc7c0e6dd5f15c2c66e881dd6e5aca98b725f3dbd83c445e057ebb790a",
+    deepbook_package_id: "0xa3886aaa8aa831572dd39549242ca004a438c3a55967af9f0387ad2b01595068",
     registry_id: "0x7c256edbda983a2cd6f946655f4bf3f00a41043993781f8674a7046e8c0e11d1",
     deep_treasury_id: "0x69fffdae0075f8f71f4fa793549c11079266910e8905169845af1f5d00e09dcb",
 };
 
 pub const MAINNET_PACKAGE_IDS: DeepBookPackageIds = DeepBookPackageIds {
-    deepbook_package_id: "0x2c8d603bc51326b8c13cef9dd07031a408a48dddb541963357661df5d3204809",
+    deepbook_package_id: "0xb29d83c26cdd2a64959263abbcfc4a6937f0c9fccaf98580ca56faded65be244",
     registry_id: "0xaf16199a2dff736e9f07a845f23c5da6df6f756eddb631aed9d24a93efc4549d",
     deep_treasury_id: "0x032abf8948dda67a271bcc18e776dbbcfb0d58c8d288a700ff0d5521e57a1ffe",
 };
@@ -103,6 +102,32 @@ lazy_static::lazy_static! {
             type_name: String::from("0x294de7579d55c110a00a7c4946e09a1b5cbeca2592fbb83fd7bfacba3cfeaf0e::drf::DRF"),
             scalar: 1_000_000,
         });
+        m.insert("SEND", Coin {
+            address: String::from("0xb45fcfcc2cc07ce0702cc2d229621e046c906ef14d9b25e8e4d25f6e8763fef7"),
+            type_name: String::from("0xb45fcfcc2cc07ce0702cc2d229621e046c906ef14d9b25e8e4d25f6e8763fef7::send::SEND"),
+            scalar: 1_000_000,
+        });
+        m.insert("WAL", Coin {
+            address: String::from("0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59"),
+            type_name: String::from("0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL"),
+            scalar: 1_000_000_000,
+        });
+        m.insert("XBTC", Coin {
+            address: String::from("0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50"),
+            type_name: String::from("0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC"),
+            scalar: 100_000_000,
+        });
+        m.insert("IKA", Coin {
+            address: String::from("0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa"),
+            type_name: String::from("0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA"),
+            scalar: 1_000_000_000,
+        });
+        // This coin is experimental
+        m.insert("WGIGA", Coin {
+            address: String::from("0xec32640add6d02a1d5f0425d72705eb76d9de7edfd4f34e0dba68e62ecceb05b"),
+            type_name: String::from("0xec32640add6d02a1d5f0425d72705eb76d9de7edfd4f34e0dba68e62ecceb05b::coin::COIN"),
+            scalar: 100_000,
+        });
         m
     };
 
@@ -127,6 +152,16 @@ lazy_static::lazy_static! {
             address: String::from("0x83970bb02e3636efdff8c141ab06af5e3c9a22e2f74d7f02a9c3430d0d10c1ca"),
             base_coin: String::from("DBUSDT"),
             quote_coin: String::from("DBUSDC"),
+        });
+        m.insert("WAL_DBUSDC", Pool {
+            address: String::from("0xeb524b6aea0ec4b494878582e0b78924208339d360b62aec4a8ecd4031520dbb"),
+            base_coin: String::from("WAL"),
+            quote_coin: String::from("WAL"),
+        });
+        m.insert("WAL_SUI", Pool {
+            address: String::from("0x8c1c1b186c4fddab1ebd53e0895a36c1d1b3b9a77cd34e607bef49a38af0150a"),
+            base_coin: String::from("WAL"),
+            quote_coin: String::from("SUI"),
         });
         m
     };
@@ -186,6 +221,36 @@ lazy_static::lazy_static! {
         m.insert("AUSD_USDC", Pool {
             address: String::from("0x5661fc7f88fbeb8cb881150a810758cf13700bb4e1f31274a244581b37c303c3"),
             base_coin: String::from("AUSD"),
+            quote_coin: String::from("USDC"),
+        });
+        m.insert("DRF_SUI", Pool {
+            address: String::from("0x126865a0197d6ab44bfd15fd052da6db92fd2eb831ff9663451bbfa1219e2af2"),
+            base_coin: String::from("DRF"),
+            quote_coin: String::from("SUI"),
+        });
+        m.insert("SEND_USDC", Pool {
+            address: String::from("0x1fe7b99c28ded39774f37327b509d58e2be7fff94899c06d22b407496a6fa990"),
+            base_coin: String::from("SEND"),
+            quote_coin: String::from("USDC"),
+        });
+        m.insert("WAL_USDC", Pool {
+            address: String::from("0x56a1c985c1f1123181d6b881714793689321ba24301b3585eec427436eb1c76d"),
+            base_coin: String::from("WAL"),
+            quote_coin: String::from("USDC"),
+        });
+        m.insert("WAL_SUI", Pool {
+            address: String::from("0x81f5339934c83ea19dd6bcc75c52e83509629a5f71d3257428c2ce47cc94d08b"),
+            base_coin: String::from("WAL"),
+            quote_coin: String::from("SUI"),
+        });
+        m.insert("XBTC_USDC", Pool {
+            address: String::from("0x20b9a3ec7a02d4f344aa1ebc5774b7b0ccafa9a5d76230662fdc0300bb215307"),
+            base_coin: String::from("XBTC"),
+            quote_coin: String::from("USDC"),
+        });
+        m.insert("IKA_USDC", Pool {
+            address: String::from("0xfa732993af2b60d04d7049511f801e79426b2b6a5103e22769c0cead982b0f47"),
+            base_coin: String::from("IKA"),
             quote_coin: String::from("USDC"),
         });
         m
