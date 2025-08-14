@@ -75,7 +75,7 @@ impl BalanceManagerContract {
         let manager = ptb.programmable_move_call(
             package_id,
             Identifier::new("balance_manager")?,
-            Identifier::new("new_with_owner")?,
+            Identifier::new("new_with_custom_owner")?,
             vec![],
             arguments,
         );

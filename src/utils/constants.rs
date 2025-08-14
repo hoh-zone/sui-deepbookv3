@@ -4,13 +4,13 @@ use std::collections::HashMap;
 use super::types::{Coin, DeepBookPackageIds, Pool};
 
 pub const TESTNET_PACKAGE_IDS: DeepBookPackageIds = DeepBookPackageIds {
-    deepbook_package_id: "0x984757fc7c0e6dd5f15c2c66e881dd6e5aca98b725f3dbd83c445e057ebb790a",
+    deepbook_package_id: "0xa3886aaa8aa831572dd39549242ca004a438c3a55967af9f0387ad2b01595068",
     registry_id: "0x7c256edbda983a2cd6f946655f4bf3f00a41043993781f8674a7046e8c0e11d1",
     deep_treasury_id: "0x69fffdae0075f8f71f4fa793549c11079266910e8905169845af1f5d00e09dcb",
 };
 
 pub const MAINNET_PACKAGE_IDS: DeepBookPackageIds = DeepBookPackageIds {
-    deepbook_package_id: "0x2c8d603bc51326b8c13cef9dd07031a408a48dddb541963357661df5d3204809",
+    deepbook_package_id: "0xb29d83c26cdd2a64959263abbcfc4a6937f0c9fccaf98580ca56faded65be244",
     registry_id: "0xaf16199a2dff736e9f07a845f23c5da6df6f756eddb631aed9d24a93efc4549d",
     deep_treasury_id: "0x032abf8948dda67a271bcc18e776dbbcfb0d58c8d288a700ff0d5521e57a1ffe",
 };
