@@ -5,7 +5,7 @@ use sui_sdk::{
     types::{
         base_types::{ObjectID, SuiAddress},
         programmable_transaction_builder::ProgrammableTransactionBuilder,
-        Identifier, TypeTag,
+        Identifier, TypeTag,SUI_CLOCK_OBJECT_ID
     },
     SuiClient,
 };
@@ -313,6 +313,98 @@ impl DeepBookAdminContract {
             Identifier::new("registry")?,
             Identifier::new("remove_stablecoin")?,
             vec![stable_coin_tag],
+            arguments,
+        );
+
+        Ok(())
+    }
+
+    /// Adjust the tick size of a pool
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance
+    /// @param pool_key - The key to identify the pool
+    /// @param new_tick_size - The new tick size
+    pub async fn adjust_tick_size(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        pool_key: &str,
+        new_tick_size: f64,
+    ) -> Result<()> {
+        let pool = self.config.get_pool(pool_key)?;
+        let base_coin = self.config.get_coin(&pool.base_coin)?;
+        let quote_coin = self.config.get_coin(&pool.quote_coin)?;
+
+        let base_scalar = base_coin.scalar;
+        let quote_scalar = quote_coin.scalar;
+
+        let adjusted_tick_size =
+            ((new_tick_size * FLOAT_SCALAR as f64 * quote_scalar as f64) / base_scalar as f64).round() as u64;
+
+        let base_coin_tag = TypeTag::from_str(&base_coin.type_name)?;
+        let quote_coin_tag = TypeTag::from_str(&quote_coin.type_name)?;
+
+        let pool_id = ObjectID::from_hex_literal(&pool.address)?;
+        let admin_cap = ObjectID::from_hex_literal(&self.admin_cap()?)?;
+
+        let arguments = vec![
+            ptb.obj(self.client.share_object(pool_id).await?)?,
+            ptb.pure(adjusted_tick_size)?,
+            ptb.obj(self.client.share_object(admin_cap).await?)?,
+            ptb.obj(self.client.share_object(SUI_CLOCK_OBJECT_ID).await?)?,
+        ];
+
+        ptb.programmable_move_call(
+            ObjectID::from_hex_literal(self.config.deepbook_package_id())?,
+            Identifier::new("pool")?,
+            Identifier::new("adjust_tick_size_admin")?,
+            vec![base_coin_tag, quote_coin_tag],
+            arguments,
+        );
+
+        Ok(())
+    }
+
+    /// Adjust the lot size and min size of a pool
+    ///
+    /// @param ptb - ProgrammableTransactionBuilder instance
+    /// @param pool_key - The key to identify the pool
+    /// @param new_lot_size - The new lot size
+    /// @param new_min_size - The new min size
+    pub async fn adjust_min_lot_size(
+        &self,
+        ptb: &mut ProgrammableTransactionBuilder,
+        pool_key: &str,
+        new_lot_size: f64,
+        new_min_size: f64,
+    ) -> Result<()> {
+        let pool = self.config.get_pool(pool_key)?;
+        let base_coin = self.config.get_coin(&pool.base_coin)?;
+        let quote_coin = self.config.get_coin(&pool.quote_coin)?;
+
+        let base_scalar = base_coin.scalar;
+
+        let adjusted_lot_size = new_lot_size * base_scalar as f64;
+        let adjusted_min_size = new_min_size * base_scalar as f64;
+
+        let base_coin_tag = TypeTag::from_str(&base_coin.type_name)?;
+        let quote_coin_tag = TypeTag::from_str(&quote_coin.type_name)?;
+
+        let pool_id = ObjectID::from_hex_literal(&pool.address)?;
+        let admin_cap = ObjectID::from_hex_literal(&self.admin_cap()?)?;
+
+        let arguments = vec![
+            ptb.obj(self.client.share_object(pool_id).await?)?,
+            ptb.pure(adjusted_lot_size as u64)?,
+            ptb.pure(adjusted_min_size as u64)?,
+            ptb.obj(self.client.share_object(admin_cap).await?)?,
+            ptb.obj(self.client.share_object(SUI_CLOCK_OBJECT_ID).await?)?,
+        ];
+
+        ptb.programmable_move_call(
+            ObjectID::from_hex_literal(self.config.deepbook_package_id())?,
+            Identifier::new("pool")?,
+            Identifier::new("adjust_min_lot_size_admin")?,
+            vec![base_coin_tag, quote_coin_tag],
             arguments,
         );
 
