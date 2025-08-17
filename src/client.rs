@@ -202,8 +202,15 @@ impl DeepBookClient {
 
     /// Check the balance of a balance manager for a specific coin
     ///
-    /// @param manager_key - The key of the balance manager
-    /// @param coin_key - The key of the coin
+    /// # Arguments
+    /// * `manager_key` - The key of the balance manager
+    /// * `coin_key` - The key of the coin
+    ///
+    /// # Returns
+    /// Returns a tuple containing the coin type name and the balance amount
+    ///
+    /// # Errors
+    /// Returns an error if the manager or coin is not found, or if the transaction fails
     pub async fn check_manager_balance(
         &self,
         manager_key: &str,

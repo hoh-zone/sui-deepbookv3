@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use std::collections::HashMap;
 use sui_deepbookv3::utils::types::BalanceManager;
 use sui_sdk::types::base_types::SuiAddress;
@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
     let sui_client = SuiClientBuilder::default()
         .build(fullnode_url)
         .await
-        .unwrap();
+        .context("Failed to build Sui client")?;
     let db_client = DeepBookClient::new(
         sui_client,
         SuiAddress::random_for_testing_only(),

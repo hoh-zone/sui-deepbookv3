@@ -1,3 +1,4 @@
+use anyhow::Context;
 use std::{collections::HashMap, str::FromStr};
 
 use sui_deepbookv3::{
@@ -18,8 +19,9 @@ use utils::dry_run_transaction;
 mod utils;
 
 #[tokio::test]
-async fn test_create_and_share_balance_manager() {
-    let sui_client = SuiClientBuilder::default().build_testnet().await.unwrap();
+async fn test_create_and_share_balance_manager() -> anyhow::Result<()> {
+    let sui_client = SuiClientBuilder::default().build_testnet().await
+        .context("Failed to build Sui testnet client")?;
 
     let config = deep_book_config();
     println!("config: {:#?}", config);
@@ -30,13 +32,16 @@ async fn test_create_and_share_balance_manager() {
 
     let _ = balance_manager.create_and_share_balance_manager(&mut ptb);
     // execute_transaction(ptb).await;
-    let result = dry_run_transaction(&sui_client, ptb).await.unwrap();
+    let result = dry_run_transaction(&sui_client, ptb).await
+        .context("Failed to dry run transaction")?;
     println!("result: {:#?}", result);
+    Ok(())
 }
 
 #[tokio::test]
-async fn test_balance_manager_owner() {
-    let sui_client = SuiClientBuilder::default().build_testnet().await.unwrap();
+async fn test_balance_manager_owner() -> anyhow::Result<()> {
+    let sui_client = SuiClientBuilder::default().build_testnet().await
+        .context("Failed to build Sui testnet client")?;
 
     let config = deep_book_config();
 
@@ -46,22 +51,26 @@ async fn test_balance_manager_owner() {
 
     let _ = balance_manager.owner(&mut ptb, "DEEP").await;
 
-    let result = dry_run_transaction(&sui_client, ptb).await.unwrap();
-    let result = result.first().unwrap();
+    let result = dry_run_transaction(&sui_client, ptb).await
+        .context("Failed to dry run transaction")?;
+    let result = result.first()
+        .ok_or_else(|| anyhow::anyhow!("No results found"))?;
     println!(
         "owner: {:#?}",
-        bcs::from_bytes::<SuiAddress>(&result.0).unwrap()
+        bcs::from_bytes::<SuiAddress>(&result.0)?
     );
     assert_eq!(
-        bcs::from_bytes::<SuiAddress>(&result.0).unwrap(),
+        bcs::from_bytes::<SuiAddress>(&result.0)?,
         SuiAddress::from_str("0x7731f9c105f3c2bde96f0eca645e718465394d609139342f3196383b823890a9")
-            .unwrap()
+            .context("Failed to parse SuiAddress")?
     );
+    Ok(())
 }
 
 #[tokio::test]
-async fn test_balance_manager_id() {
-    let sui_client = SuiClientBuilder::default().build_testnet().await.unwrap();
+async fn test_balance_manager_id() -> anyhow::Result<()> {
+    let sui_client = SuiClientBuilder::default().build_testnet().await
+        .context("Failed to build Sui testnet client")?;
 
     let config = deep_book_config();
 
@@ -71,17 +80,20 @@ async fn test_balance_manager_id() {
 
     let _ = balance_manager.id(&mut ptb, "DEEP").await;
 
-    let result = dry_run_transaction(&sui_client, ptb).await.unwrap();
-    let result = result.first().unwrap();
+    let result = dry_run_transaction(&sui_client, ptb).await
+        .context("Failed to dry run transaction")?;
+    let result = result.first()
+        .ok_or_else(|| anyhow::anyhow!("No results found"))?;
     println!(
         "id: {:#?}",
-        bcs::from_bytes::<SuiAddress>(&result.0).unwrap()
+        bcs::from_bytes::<SuiAddress>(&result.0)?
     );
     assert_eq!(
-        bcs::from_bytes::<SuiAddress>(&result.0).unwrap(),
+        bcs::from_bytes::<SuiAddress>(&result.0)?,
         SuiAddress::from_str("0x722c39b7b79831d534fbfa522e07101cb881f8807c28b9cf03a58b04c6c5ca9a")
-            .unwrap()
+            .context("Failed to parse SuiAddress")?
     );
+    Ok(())
 }
 
 fn deep_book_config() -> DeepBookConfig {
