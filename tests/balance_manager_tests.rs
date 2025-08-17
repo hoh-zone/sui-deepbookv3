@@ -20,6 +20,13 @@ mod utils;
 
 #[tokio::test]
 async fn test_create_and_share_balance_manager() -> anyhow::Result<()> {
+    // Skip test if no wallet address is available
+    let wallet_result = utils::retrieve_wallet();
+    if wallet_result.is_err() {
+        println!("Skipping test: no wallet address available");
+        return Ok(());
+    }
+
     let sui_client = SuiClientBuilder::default().build_testnet().await
         .context("Failed to build Sui testnet client")?;
 
@@ -40,6 +47,13 @@ async fn test_create_and_share_balance_manager() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_balance_manager_owner() -> anyhow::Result<()> {
+    // Skip test if no wallet address is available
+    let wallet_result = utils::retrieve_wallet();
+    if wallet_result.is_err() {
+        println!("Skipping test: no wallet address available");
+        return Ok(());
+    }
+
     let sui_client = SuiClientBuilder::default().build_testnet().await
         .context("Failed to build Sui testnet client")?;
 
@@ -69,6 +83,13 @@ async fn test_balance_manager_owner() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_balance_manager_id() -> anyhow::Result<()> {
+    // Skip test if no wallet address is available
+    let wallet_result = utils::retrieve_wallet();
+    if wallet_result.is_err() {
+        println!("Skipping test: no wallet address available");
+        return Ok(());
+    }
+
     let sui_client = SuiClientBuilder::default().build_testnet().await
         .context("Failed to build Sui testnet client")?;
 

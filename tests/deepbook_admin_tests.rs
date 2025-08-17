@@ -10,7 +10,7 @@ use sui_deepbookv3::{
 };
 use sui_sdk::{
     types::{
-        base_types::SuiAddress, programmable_transaction_builder::ProgrammableTransactionBuilder,
+        programmable_transaction_builder::ProgrammableTransactionBuilder,
     },
     SuiClientBuilder,
 };
@@ -20,6 +20,13 @@ mod utils;
 
 #[tokio::test]
 async fn test_adjust_tick_size() -> anyhow::Result<()> {
+    // Skip test if no wallet address is available
+    let wallet_result = utils::retrieve_wallet();
+    if wallet_result.is_err() {
+        println!("Skipping test: no wallet address available");
+        return Ok(());
+    }
+
     let sui_client = SuiClientBuilder::default().build_testnet().await
         .context("Failed to build Sui testnet client")?;
 
@@ -41,6 +48,13 @@ async fn test_adjust_tick_size() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_adjust_min_lot_size() -> anyhow::Result<()> {
+    // Skip test if no wallet address is available
+    let wallet_result = utils::retrieve_wallet();
+    if wallet_result.is_err() {
+        println!("Skipping test: no wallet address available");
+        return Ok(());
+    }
+
     let sui_client = SuiClientBuilder::default().build_testnet().await
         .context("Failed to build Sui testnet client")?;
 

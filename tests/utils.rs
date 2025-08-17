@@ -49,7 +49,7 @@ pub fn retrieve_wallet() -> anyhow::Result<WalletContext> {
 
     let addresses = keystore.addresses();
     let default_active_address = addresses.first()
-        .ok_or_else(|| anyhow::anyhow!("No addresses found in keystore"))?;
+        .ok_or_else(|| anyhow::anyhow!("No addresses found in keystore. Please add an address to your wallet."))?;
 
     client_config.active_address = Some(default_active_address.clone());
     client_config.save(&wallet_conf)?;
