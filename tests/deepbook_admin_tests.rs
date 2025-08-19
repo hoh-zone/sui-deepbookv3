@@ -1,3 +1,4 @@
+use anyhow::Context;
 use std::collections::HashMap;
 
 use sui_deepbookv3::{
@@ -9,7 +10,7 @@ use sui_deepbookv3::{
 };
 use sui_sdk::{
     types::{
-        base_types::SuiAddress, programmable_transaction_builder::ProgrammableTransactionBuilder,
+        programmable_transaction_builder::ProgrammableTransactionBuilder,
     },
     SuiClientBuilder,
 };
@@ -18,10 +19,18 @@ use utils::dry_run_transaction;
 mod utils;
 
 #[tokio::test]
-async fn test_adjust_tick_size() {
-    let sui_client = SuiClientBuilder::default().build_testnet().await.unwrap();
+async fn test_adjust_tick_size() -> anyhow::Result<()> {
+    // Skip test if no wallet address is available
+    let wallet_result = utils::retrieve_wallet();
+    if wallet_result.is_err() {
+        println!("Skipping test: no wallet address available");
+        return Ok(());
+    }
 
-    let config = deep_book_config();
+    let sui_client = SuiClientBuilder::default().build_testnet().await
+        .context("Failed to build Sui testnet client")?;
+
+    let config = deep_book_config()?;
 
     let deepbook_admin = DeepBookAdminContract::new(sui_client.clone(), config);
 
@@ -31,15 +40,25 @@ async fn test_adjust_tick_size() {
         .adjust_tick_size(&mut ptb, "SUI_USDC", 100.0)
         .await;
 
-    let result = dry_run_transaction(&sui_client, ptb).await.unwrap();
+    let result = dry_run_transaction(&sui_client, ptb).await
+        .context("Failed to dry run transaction")?;
     assert!(result.is_empty());
+    Ok(())
 }
 
 #[tokio::test]
-async fn test_adjust_min_lot_size() {
-    let sui_client = SuiClientBuilder::default().build_testnet().await.unwrap();
+async fn test_adjust_min_lot_size() -> anyhow::Result<()> {
+    // Skip test if no wallet address is available
+    let wallet_result = utils::retrieve_wallet();
+    if wallet_result.is_err() {
+        println!("Skipping test: no wallet address available");
+        return Ok(());
+    }
 
-    let config = deep_book_config();
+    let sui_client = SuiClientBuilder::default().build_testnet().await
+        .context("Failed to build Sui testnet client")?;
+
+    let config = deep_book_config()?;
 
     let deepbook_admin = DeepBookAdminContract::new(sui_client.clone(), config);
 
@@ -49,12 +68,15 @@ async fn test_adjust_min_lot_size() {
         .adjust_min_lot_size(&mut ptb, "SUI_USDC", 100.0, 100.0)
         .await;
 
-    let result = dry_run_transaction(&sui_client, ptb).await.unwrap();
+    let result = dry_run_transaction(&sui_client, ptb).await
+        .context("Failed to dry run transaction")?;
     assert!(result.is_empty());
+    Ok(())
 }
 
-fn deep_book_config() -> DeepBookConfig {
-    let mut wallet = utils::retrieve_wallet().unwrap();
+fn deep_book_config() -> anyhow::Result<DeepBookConfig> {
+    let mut wallet = utils::retrieve_wallet()
+        .context("Failed to retrieve wallet")?;
     let admin_cap = Some(
         "0x7731f9c105f3c2bde96f0eca645e718465394d609139342f3196383b823890a9".to_string(),
     );
@@ -78,12 +100,12 @@ fn deep_book_config() -> DeepBookConfig {
         },
     )]);
 
-    DeepBookConfig::new(
+    Ok(DeepBookConfig::new(
         Environment::Testnet,
-        wallet.active_address().unwrap(),
+        wallet.active_address()?,
         admin_cap,
         None,
         Some(coins),
         Some(pools),
-    )
+    ))
 }

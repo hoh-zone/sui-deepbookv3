@@ -1,3 +1,4 @@
+use anyhow::Context;
 use shared_crypto::intent::Intent;
 use sui_config::{
     sui_config_dir, Config, PersistedConfig, SUI_CLIENT_CONFIG, SUI_KEYSTORE_FILENAME,
@@ -47,7 +48,8 @@ pub fn retrieve_wallet() -> anyhow::Result<WalletContext> {
     let mut client_config: SuiClientConfig = PersistedConfig::read(&wallet_conf)?;
 
     let addresses = keystore.addresses();
-    let default_active_address = addresses.first().unwrap();
+    let default_active_address = addresses.first()
+        .ok_or_else(|| anyhow::anyhow!("No addresses found in keystore. Please add an address to your wallet."))?;
 
     client_config.active_address = Some(default_active_address.clone());
     client_config.save(&wallet_conf)?;
@@ -58,27 +60,30 @@ pub fn retrieve_wallet() -> anyhow::Result<WalletContext> {
 }
 
 #[allow(dead_code)]
-pub async fn execute_transaction(ptb: ProgrammableTransactionBuilder) {
-    let sui_client = SuiClientBuilder::default().build_testnet().await.unwrap();
+pub async fn execute_transaction(ptb: ProgrammableTransactionBuilder) -> anyhow::Result<()> {
+    let sui_client = SuiClientBuilder::default().build_testnet().await
+        .context("Failed to build Sui testnet client")?;
     println!("Sui testnet version: {}", sui_client.api_version());
 
-    let mut wallet = retrieve_wallet().unwrap();
-    let sender = wallet.active_address().unwrap();
+    let mut wallet = retrieve_wallet()
+        .context("Failed to retrieve wallet")?;
+    let sender = wallet.active_address()?;
     println!("Sender: {}", sender);
 
     let coins = sui_client
         .coin_read_api()
         .get_coins(sender, None, None, None)
         .await
-        .unwrap();
-    let coin = coins.data.into_iter().next().unwrap();
+        .context("Failed to get coins")?;
+    let coin = coins.data.into_iter().next()
+        .ok_or_else(|| anyhow::anyhow!("No coins found"))?;
 
     let gas_budget = 10_000_000;
     let gas_price = sui_client
         .read_api()
         .get_reference_gas_price()
         .await
-        .unwrap();
+        .context("Failed to get reference gas price")?;
 
     let builder = ptb.finish();
     println!("{:?}", builder);
@@ -94,10 +99,13 @@ pub async fn execute_transaction(ptb: ProgrammableTransactionBuilder) {
 
     // 4) sign transaction
     let keystore =
-        FileBasedKeystore::new(&sui_config_dir().unwrap().join(SUI_KEYSTORE_FILENAME)).unwrap();
+        FileBasedKeystore::new(&sui_config_dir()
+            .context("Failed to get sui config dir")?
+            .join(SUI_KEYSTORE_FILENAME))
+        .context("Failed to create keystore")?;
     let signature = keystore
         .sign_secure(&sender, &tx_data, Intent::sui_transaction())
-        .unwrap();
+        .context("Failed to sign transaction")?;
 
     // 5) execute the transaction
     print!("Executing the transaction...");
@@ -109,17 +117,20 @@ pub async fn execute_transaction(ptb: ProgrammableTransactionBuilder) {
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await
-        .unwrap();
+        .context("Failed to execute transaction")?;
     println!("{}", transaction_response);
+    Ok(())
 }
 
 pub async fn dry_run_transaction(
     sui_client: &SuiClient,
     ptb: ProgrammableTransactionBuilder,
 ) -> anyhow::Result<Vec<(Vec<u8>, SuiTypeTag)>> {
-    let mut wallet = retrieve_wallet().unwrap();
-    let sender = wallet.active_address().unwrap();
+    let mut wallet = retrieve_wallet()
+        .context("Failed to retrieve wallet")?;
+    let sender = wallet.active_address()?;
     println!("Sender: {}", sender);
 
     sui_client.dev_inspect_transaction(sender, ptb).await
+        .context("Failed to inspect transaction")
 }
