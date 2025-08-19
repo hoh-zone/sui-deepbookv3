@@ -31,7 +31,6 @@ async fn test_create_and_share_balance_manager() -> anyhow::Result<()> {
         .context("Failed to build Sui testnet client")?;
 
     let config = deep_book_config();
-    println!("config: {:#?}", config);
 
     let balance_manager = BalanceManagerContract::new(sui_client.clone(), config);
 
@@ -41,7 +40,10 @@ async fn test_create_and_share_balance_manager() -> anyhow::Result<()> {
     // execute_transaction(ptb).await;
     let result = dry_run_transaction(&sui_client, ptb).await
         .context("Failed to dry run transaction")?;
-    println!("result: {:#?}", result);
+    
+    // Assert that the transaction was successful
+    assert!(!result.is_empty(), "Transaction should return results");
+    
     Ok(())
 }
 
@@ -69,14 +71,13 @@ async fn test_balance_manager_owner() -> anyhow::Result<()> {
         .context("Failed to dry run transaction")?;
     let result = result.first()
         .ok_or_else(|| anyhow::anyhow!("No results found"))?;
-    println!(
-        "owner: {:#?}",
-        bcs::from_bytes::<SuiAddress>(&result.0)?
-    );
+    let owner_address = bcs::from_bytes::<SuiAddress>(&result.0)
+        .context("Failed to deserialize owner address")?;
+    
     assert_eq!(
-        bcs::from_bytes::<SuiAddress>(&result.0)?,
+        owner_address,
         SuiAddress::from_str("0x7731f9c105f3c2bde96f0eca645e718465394d609139342f3196383b823890a9")
-            .context("Failed to parse SuiAddress")?
+            .context("Failed to parse expected SuiAddress")?
     );
     Ok(())
 }
@@ -105,14 +106,13 @@ async fn test_balance_manager_id() -> anyhow::Result<()> {
         .context("Failed to dry run transaction")?;
     let result = result.first()
         .ok_or_else(|| anyhow::anyhow!("No results found"))?;
-    println!(
-        "id: {:#?}",
-        bcs::from_bytes::<SuiAddress>(&result.0)?
-    );
+    let id_address = bcs::from_bytes::<SuiAddress>(&result.0)
+        .context("Failed to deserialize ID address")?;
+    
     assert_eq!(
-        bcs::from_bytes::<SuiAddress>(&result.0)?,
+        id_address,
         SuiAddress::from_str("0x722c39b7b79831d534fbfa522e07101cb881f8807c28b9cf03a58b04c6c5ca9a")
-            .context("Failed to parse SuiAddress")?
+            .context("Failed to parse expected SuiAddress")?
     );
     Ok(())
 }
